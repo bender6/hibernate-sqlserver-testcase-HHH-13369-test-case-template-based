@@ -20,9 +20,6 @@ import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-/**
- * This template demonstrates how to develop a test case for Hibernate ORM, using the Java Persistence API.
- */
 public class JPAUnitTestCase {
 
     @ClassRule

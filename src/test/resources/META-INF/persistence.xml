@@ -27,11 +27,10 @@
 
             <property name="javax.persistence.schema-generation.database.action" value="drop-and-create"/>
 
+            <property name="hibernate.hbm2ddl.import_files_sql_extractor" value="org.hibernate.tool.hbm2ddl.MultipleLinesSqlCommandExtractor" />
+
             <property name="javax.persistence.schema-generation.create-source" value="script"/>
             <property name="javax.persistence.schema-generation.create-script-source" value="META-INF/create.sql"/>
-
-            <property name="javax.persistence.schema-generation.drop-source" value="script"/>
-            <property name="javax.persistence.schema-generation.drop-script-source" value="META-INF/drop.sql"/>
 
             <property name="hibernate.max_fetch_depth" value="5"/>
 
