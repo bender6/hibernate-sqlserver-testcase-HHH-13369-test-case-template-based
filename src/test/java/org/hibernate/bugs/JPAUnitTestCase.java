@@ -45,19 +45,86 @@ public class JPAUnitTestCase {
         entityManagerFactory.close();
     }
 
+    // fails
     @Test
     @TestForIssue(jiraKey = "HHH-13369")
-    public void hhh13369test() throws Exception {
-        TimeZone.setDefault(TimeZone.getTimeZone(ZoneId.of("UTC"))); // force time zone to UTC for predictable results
+    public void shouldPreserveInstantInNonUtcSystemTimeZone() {
+        TimeZone.setDefault(TimeZone.getTimeZone(ZoneId.of("Europe/Vienna")));
+
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         entityManager.getTransaction().begin();
 
-        OffsetDateTime now = OffsetDateTime.now(Clock.fixed(Instant.EPOCH, ZoneId.of("CET")));
-        EntityWithOffsetTimestamp entity = new EntityWithOffsetTimestamp(0, now);
+        OffsetDateTime epochInNy = OffsetDateTime.now(Clock.fixed(Instant.EPOCH, ZoneId.of("America/New_York")));
+        EntityWithOffsetTimestamp entity = new EntityWithOffsetTimestamp(0, epochInNy);
         entityManager.persist(entity);
         entityManager.flush();
         entityManager.refresh(entity);
-        assertThat("Persisted time should be the same as the original", entity.getCreatedAt(), equalTo(now));
+
+        assertThat("Persisted time should be the same as instant the original", entity.getCreatedAt().toInstant(), equalTo(epochInNy.toInstant()));
+
+        entityManager.getTransaction().commit();
+        entityManager.close();
+    }
+
+    // fails
+    @Test
+    @TestForIssue(jiraKey = "HHH-13369")
+    public void shouldPreserveOffsetInNonUtcSystemTimeZone() {
+        TimeZone.setDefault(TimeZone.getTimeZone(ZoneId.of("Europe/Vienna")));
+
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        entityManager.getTransaction().begin();
+
+        OffsetDateTime epochInNy = OffsetDateTime.now(Clock.fixed(Instant.EPOCH, ZoneId.of("America/New_York")));
+        EntityWithOffsetTimestamp entity = new EntityWithOffsetTimestamp(0, epochInNy);
+        entityManager.persist(entity);
+        entityManager.flush();
+        entityManager.refresh(entity);
+
+        assertThat("Persisted time should preserve original offset", entity.getCreatedAt().getOffset(), equalTo(epochInNy.getOffset()));
+
+        entityManager.getTransaction().commit();
+        entityManager.close();
+    }
+
+    // succeeds
+    @Test
+    @TestForIssue(jiraKey = "HHH-13369")
+    public void shouldPreserveInstantInUtcSystemTimeZone() {
+        TimeZone.setDefault(TimeZone.getTimeZone(ZoneId.of("UTC")));
+
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        entityManager.getTransaction().begin();
+
+        OffsetDateTime epochInNy = OffsetDateTime.now(Clock.fixed(Instant.EPOCH, ZoneId.of("America/New_York")));
+        EntityWithOffsetTimestamp entity = new EntityWithOffsetTimestamp(0, epochInNy);
+        entityManager.persist(entity);
+        entityManager.flush();
+        entityManager.refresh(entity);
+
+        assertThat("Persisted time should be the same as instant the original", entity.getCreatedAt().toInstant(), equalTo(epochInNy.toInstant()));
+
+        entityManager.getTransaction().commit();
+        entityManager.close();
+    }
+
+
+    // fails
+    @Test
+    @TestForIssue(jiraKey = "HHH-13369")
+    public void shouldPreserveOffsetInUtcSystemTimeZone() {
+        TimeZone.setDefault(TimeZone.getTimeZone(ZoneId.of("UTC")));
+
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        entityManager.getTransaction().begin();
+
+        OffsetDateTime epochInNy = OffsetDateTime.now(Clock.fixed(Instant.EPOCH, ZoneId.of("America/New_York")));
+        EntityWithOffsetTimestamp entity = new EntityWithOffsetTimestamp(0, epochInNy);
+        entityManager.persist(entity);
+        entityManager.flush();
+        entityManager.refresh(entity);
+
+        assertThat("Persisted time should preserve original offset", entity.getCreatedAt().getOffset(), equalTo(epochInNy.getOffset()));
 
         entityManager.getTransaction().commit();
         entityManager.close();
